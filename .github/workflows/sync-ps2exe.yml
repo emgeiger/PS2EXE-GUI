@@ -12,7 +12,7 @@ jobs:
     steps:
       # 1. Check out this repository
       - name: Check out this repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       # 2. Download ps2exe.ps1 from the external repository
       - name: Download ps2exe.ps1 from MScholtes/Win-PS2EXE
@@ -58,7 +58,7 @@ jobs:
       # 6. Create a Pull Request if changes were made
       - name: Create a pull request
         if: env.changed == 'true' || env.exists == 'false'
-        uses: peter-evans/create-pull-request@v7
+        uses: peter-evans/create-pull-request@v8
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           commit-message: "Sync ps2exe.ps1 from MScholtes/Win-PS2EXE"
