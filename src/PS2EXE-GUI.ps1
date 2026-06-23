@@ -144,8 +144,6 @@ $Xaml = @"
 
 #region pre_code
 $PS2EXE_GUI_Verbose = $true
-<<<<<<< Updated upstream
-=======
 $script:PS2EXE_GUI_ConfigPath = $null
 $script:PS2EXE_GUI_CONFIG_FILTER = "PS2EXE-GUI Config (*.json)|*.json"
 $script:PS2EXE_PS1_RAW_URL = "https://raw.githubusercontent.com/MScholtes/Win-PS2EXE/master/ps2exe.ps1"
@@ -187,7 +185,6 @@ $script:PS2EXE_GUI_DEFAULTS = [ordered]@{
     'ui_virtualize'        = $false
     'ui_longPaths'         = $false
 }
->>>>>>> Stashed changes
 
 Add-Type -AssemblyName System.Windows.Forms
 
@@ -327,13 +324,8 @@ function Add-PS2EXE_Argument ($Key,$Value) {
 }
 
 function Invoke-PS2EXE {
-<<<<<<< Updated upstream
-    $global:PS2EXE_Arguments = New-Object -TypeName System.Collections.ArrayList
-    
-=======
     $script:PS2EXE_Arguments = New-Object -TypeName System.Collections.ArrayList
 
->>>>>>> Stashed changes
     <#
         KEY/VALUE-PARAMETERS
     #>
@@ -450,11 +442,6 @@ function Invoke-PS2EXE {
             $State.value_console += $PS_LNB+$PS_LNB+$PS_LINE+$PS_LNB+$PS2EXE_CALL+$PS_LNB+$PS_LINE
             $State.value_console += $PS_LNB+$PS_LNB+'STATUS: FAILURE ❌ - Executable could not be created.'
         }
-<<<<<<< Updated upstream
-        $State.value_console += $PS_LNB+$PS_LNB+'Waiting 5 Seconds...'
-        Start-Sleep -Seconds 5
-        $State.TabIndex = 0
-=======
 
         Add-PS2EXEGUI_ConsoleLog -Line ($PS_LINE+$PS_LNB+'EXECUTION ENDED')
         $State.state_compiled = $true
@@ -557,7 +544,6 @@ function Invoke-PS2EXEGUI_CheckPS2EXEUpdate {
         [System.Windows.MessageBox]::Show("Failed to check for updates:`n"+$_.Exception.Message, "ps2exe.ps1 Update", [System.Windows.MessageBoxButton]::OK, [System.Windows.MessageBoxImage]::Error)
     } finally {
         if(Test-Path -Path $TempFile){ Remove-Item -Path $TempFile -Force -ErrorAction SilentlyContinue }
->>>>>>> Stashed changes
     }
 }
 #endregion 
