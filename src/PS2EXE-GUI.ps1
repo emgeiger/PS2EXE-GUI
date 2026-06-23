@@ -144,6 +144,50 @@ $Xaml = @"
 
 #region pre_code
 $PS2EXE_GUI_Verbose = $true
+<<<<<<< Updated upstream
+=======
+$script:PS2EXE_GUI_ConfigPath = $null
+$script:PS2EXE_GUI_CONFIG_FILTER = "PS2EXE-GUI Config (*.json)|*.json"
+$script:PS2EXE_PS1_RAW_URL = "https://raw.githubusercontent.com/MScholtes/Win-PS2EXE/master/ps2exe.ps1"
+$script:PS2EXE_GUI_CONFIG_KEYS = @(
+    'ui_inputFile','ui_outputFile','ui_iconFile',
+    'ui_title','ui_description','ui_company','ui_product','ui_copyright','ui_trademark','ui_version',
+    'value_runtime','value_instructionSet','value_threadApartment',
+    'ui_prepareDebug','ui_noConsole','ui_UNICODEEncoding','ui_credentialGUI','ui_configFile',
+    'ui_noOutput','ui_noError','ui_noVisualStyles','ui_exitOnCancel',
+    'ui_DPIAware','ui_winFormsDPIAware','ui_requireAdmin','ui_supportOS','ui_virtualize','ui_longPaths'
+)
+$script:PS2EXE_GUI_DEFAULTS = [ordered]@{
+    'ui_inputFile'         = ''
+    'ui_outputFile'        = ''
+    'ui_iconFile'          = ''
+    'ui_title'             = ''
+    'ui_description'       = ''
+    'ui_company'           = ''
+    'ui_product'           = ''
+    'ui_copyright'         = ''
+    'ui_trademark'         = ''
+    'ui_version'           = ''
+    'value_runtime'        = '[runtime40] .NET Framework 4.x for PowerShell 3.0'
+    'value_instructionSet' = 'x64 - 64-Bit Application'
+    'value_threadApartment'= 'STA - Single Thread Apartment'
+    'ui_prepareDebug'      = $false
+    'ui_noConsole'         = $false
+    'ui_UNICODEEncoding'   = $true
+    'ui_credentialGUI'     = $false
+    'ui_configFile'        = $false
+    'ui_noOutput'          = $false
+    'ui_noError'           = $false
+    'ui_noVisualStyles'    = $false
+    'ui_exitOnCancel'      = $false
+    'ui_DPIAware'          = $false
+    'ui_winFormsDPIAware'  = $false
+    'ui_requireAdmin'      = $false
+    'ui_supportOS'         = $true
+    'ui_virtualize'        = $false
+    'ui_longPaths'         = $false
+}
+>>>>>>> Stashed changes
 
 Add-Type -AssemblyName System.Windows.Forms
 
@@ -276,15 +320,20 @@ function Invoke-UI_iconFile {
 
 function Add-PS2EXE_Argument ($Key,$Value) {
     if($null -eq $Value){
-        $global:PS2EXE_Arguments.Add("-"+$Key)
+        $script:PS2EXE_Arguments.Add("-"+$Key)
     } else {
-        $global:PS2EXE_Arguments.Add("-"+$Key+' "'+$Value+'"')
+        $script:PS2EXE_Arguments.Add("-"+$Key+' "'+$Value+'"')
     }
 }
 
 function Invoke-PS2EXE {
+<<<<<<< Updated upstream
     $global:PS2EXE_Arguments = New-Object -TypeName System.Collections.ArrayList
     
+=======
+    $script:PS2EXE_Arguments = New-Object -TypeName System.Collections.ArrayList
+
+>>>>>>> Stashed changes
     <#
         KEY/VALUE-PARAMETERS
     #>
@@ -354,7 +403,7 @@ function Invoke-PS2EXE {
         $PS2EXE_SOURCE = $PS2EXE_SOURCE -replace 's.StartsWith("-extdummt".Replace("dumm", "rac"), StringComparison.InvariantCultureIgnoreCase)','false'
     #>
     Switch-Page -Page 2
-    $PS2EXE_CMD = '".\ps2exe.ps1" '+$global:PS2EXE_Arguments
+    $PS2EXE_CMD = '".\ps2exe.ps1" '+$script:PS2EXE_Arguments
     $State.value_console_command = [Convert]::ToBase64String([System.Text.Encoding]::Unicode.GetBytes([string]$PS2EXE_CMD))
     $State.value_console_root = [Convert]::ToBase64String([System.Text.Encoding]::Unicode.GetBytes((Get-Location).Path))
     Async {
@@ -401,9 +450,114 @@ function Invoke-PS2EXE {
             $State.value_console += $PS_LNB+$PS_LNB+$PS_LINE+$PS_LNB+$PS2EXE_CALL+$PS_LNB+$PS_LINE
             $State.value_console += $PS_LNB+$PS_LNB+'STATUS: FAILURE ❌ - Executable could not be created.'
         }
+<<<<<<< Updated upstream
         $State.value_console += $PS_LNB+$PS_LNB+'Waiting 5 Seconds...'
         Start-Sleep -Seconds 5
         $State.TabIndex = 0
+=======
+
+        Add-PS2EXEGUI_ConsoleLog -Line ($PS_LINE+$PS_LNB+'EXECUTION ENDED')
+        $State.state_compiled = $true
+    }
+}
+
+function Invoke-PS2EXEGUI_NewConfig {
+    if($PS2EXE_GUI_Verbose){ Write-Host "[Invoke-PS2EXEGUI_NewConfig]" }
+    $script:PS2EXE_GUI_DEFAULTS.GetEnumerator() | ForEach-Object { $State.($_.Key) = $_.Value }
+    $script:PS2EXE_GUI_ConfigPath = $null
+}
+
+function Invoke-PS2EXEGUI_SaveConfig ($FilePath) {
+    if($PS2EXE_GUI_Verbose){ Write-Host ("[Invoke-PS2EXEGUI_SaveConfig] FilePath: "+$FilePath) }
+    $Config = [ordered]@{}
+    $script:PS2EXE_GUI_CONFIG_KEYS | ForEach-Object { $Config[$_] = $State.$_ }
+    $Config | ConvertTo-Json | Set-Content -Path $FilePath -Encoding UTF8
+    $script:PS2EXE_GUI_ConfigPath = $FilePath
+}
+
+function Invoke-PS2EXEGUI_OpenConfig ($FilePath) {
+    if($PS2EXE_GUI_Verbose){ Write-Host ("[Invoke-PS2EXEGUI_OpenConfig] FilePath: "+$FilePath) }
+    $Config = Get-Content -Path $FilePath -Raw -Encoding UTF8 | ConvertFrom-Json
+    $script:PS2EXE_GUI_CONFIG_KEYS | ForEach-Object {
+        $key = $_
+        if($null -ne $Config.$key){
+            $defaultVal = $script:PS2EXE_GUI_DEFAULTS[$key]
+            if($defaultVal -is [bool]){
+                try { $State.$key = [System.Convert]::ToBoolean($Config.$key) }
+                catch { $State.$key = $defaultVal }
+            } else {
+                $State.$key = [string]$Config.$key
+            }
+        }
+    }
+    $script:PS2EXE_GUI_ConfigPath = $FilePath
+}
+
+function Invoke-UI_SaveConfig {
+    if($null -ne $script:PS2EXE_GUI_ConfigPath){
+        Invoke-PS2EXEGUI_SaveConfig -FilePath $script:PS2EXE_GUI_ConfigPath
+    } else {
+        Invoke-UI_SaveAsConfig
+    }
+}
+
+function Invoke-UI_SaveAsConfig {
+    $FilePath = Invoke-PS2EXEGUI_SaveFileDialog -Filter $script:PS2EXE_GUI_CONFIG_FILTER
+    if($FilePath -ne ""){ Invoke-PS2EXEGUI_SaveConfig -FilePath $FilePath }
+}
+
+function Invoke-UI_OpenConfig {
+    $FilePath = Invoke-PS2EXEGUI_OpenFileDialog -Filter $script:PS2EXE_GUI_CONFIG_FILTER
+    if($FilePath -ne ""){ Invoke-PS2EXEGUI_OpenConfig -FilePath $FilePath }
+}
+
+function Install-PS2EXEUpdate ($TempFile, $Destination, $SuccessMessage) {
+    Copy-Item -Path $TempFile -Destination $Destination -Force
+    if(Test-Path -Path $Destination){
+        [System.Windows.MessageBox]::Show($SuccessMessage, "ps2exe.ps1 Update", [System.Windows.MessageBoxButton]::OK, [System.Windows.MessageBoxImage]::Information)
+    } else {
+        [System.Windows.MessageBox]::Show("The file could not be saved. Please check write permissions.", "ps2exe.ps1 Update", [System.Windows.MessageBoxButton]::OK, [System.Windows.MessageBoxImage]::Warning)
+    }
+}
+
+function Invoke-PS2EXEGUI_CheckPS2EXEUpdate {
+    if($PS2EXE_GUI_Verbose){ Write-Host "[Invoke-PS2EXEGUI_CheckPS2EXEUpdate]" }
+    $TempFile = (New-TemporaryFile).FullName
+    try {
+        Invoke-WebRequest -Uri $script:PS2EXE_PS1_RAW_URL -OutFile $TempFile -UseBasicParsing
+        $LocalPS2EXE = Join-Path $PSScriptRoot "ps2exe.ps1"
+        if(Test-Path -Path $LocalPS2EXE){
+            $LocalHash  = (Get-FileHash -Path $LocalPS2EXE -Algorithm SHA256).Hash
+            $RemoteHash = (Get-FileHash -Path $TempFile   -Algorithm SHA256).Hash
+            if($LocalHash -ne $RemoteHash){
+                $result = [System.Windows.MessageBox]::Show(
+                    "A newer version of ps2exe.ps1 is available.`nUpdate now?",
+                    "ps2exe.ps1 Update",
+                    [System.Windows.MessageBoxButton]::YesNo,
+                    [System.Windows.MessageBoxImage]::Question
+                )
+                if($result -eq [System.Windows.MessageBoxResult]::Yes){
+                    Install-PS2EXEUpdate -TempFile $TempFile -Destination $LocalPS2EXE -SuccessMessage "ps2exe.ps1 has been updated successfully!"
+                }
+            } else {
+                [System.Windows.MessageBox]::Show("ps2exe.ps1 is already up to date.", "ps2exe.ps1 Update", [System.Windows.MessageBoxButton]::OK, [System.Windows.MessageBoxImage]::Information)
+            }
+        } else {
+            $result = [System.Windows.MessageBox]::Show(
+                "ps2exe.ps1 was not found in the script directory.`nDownload it now?",
+                "ps2exe.ps1 Update",
+                [System.Windows.MessageBoxButton]::YesNo,
+                [System.Windows.MessageBoxImage]::Question
+            )
+            if($result -eq [System.Windows.MessageBoxResult]::Yes){
+                Install-PS2EXEUpdate -TempFile $TempFile -Destination $LocalPS2EXE -SuccessMessage "ps2exe.ps1 has been downloaded successfully!"
+            }
+        }
+    } catch {
+        [System.Windows.MessageBox]::Show("Failed to check for updates:`n"+$_.Exception.Message, "ps2exe.ps1 Update", [System.Windows.MessageBoxButton]::OK, [System.Windows.MessageBoxImage]::Error)
+    } finally {
+        if(Test-Path -Path $TempFile){ Remove-Item -Path $TempFile -Force -ErrorAction SilentlyContinue }
+>>>>>>> Stashed changes
     }
 }
 #endregion 
@@ -532,7 +686,7 @@ $DataObject =  ConvertFrom-Json @"
 	"state_compile": false,
 	"state_inputFile": "#FFABADB3",
 	"value_runtime":"[runtime40] .NET Framework 4.x for PowerShell 3.0",
-	"value_instructionSet":"x86 - 32-Bit Application",
+	"value_instructionSet":"x64 - 64-Bit Application",
 	"value_threadApartment":"STA - Single Thread Apartment",
 	"value_console":"Console - PS2EXE-GUI`n",
 	"value_console_command": "",
